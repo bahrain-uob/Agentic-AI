@@ -114,6 +114,9 @@ npm install web-vitals
 npm audit fix --force
 ```
 ```
+npm install react-scripts --save-dev
+```
+```
 npm run build
 ```
 
