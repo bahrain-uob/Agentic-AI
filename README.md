@@ -1,66 +1,33 @@
 # CIC Innovation Center - TestingChallenge PoC
 
-### 📁 **Project Structure**
+# EDU-AGENT – Agentic AI for Programme Analysis & Campaigns
 
+EDU-AGENT is an agentic AI pilot for the University of Bahrain (UoB) that:
+
+- Compresses **programme analysis and review cycles** (months → weeks),
+- Benchmarks programmes against **local, regional, and international** comparators,
+- Generates **evidence- and standards-aligned narratives** (BQA, ACM, credit mix),
+- Supports **student-facing Q&A and guided campaigns** for recruitment and retention.
+
+The project is implemented on AWS using Amazon Bedrock and related services, and is being built as a student challenge in sprints.
+
+---
+
+## Repository Layout
+
+High-level structure:
+
+```text
+.
+├── README.md                 # This file
+├── CONTRIBUTING.md           # How students to work in this repo
+├── docs/                     # Design, workshop notes, sprint docs
+├── backend/                  # Application services (agents, RAG, pipelines, charts)
+├── infrastructure/           # CDK app and Lambda assets (infra scaffolding)
+└── .github/                  # (optional) GitHub workflows
 ```
 
-CIC-[ChallengeName]-PoC/
-│── frontend/                # React app (S3-hosted website)
-│   ├── public/
-│   ├── src/
-│   ├── package.json
-│   ├── .gitignore
-│   ├── README.md
-│   ├── build/               # React build output (deployed to S3)
-│── lambda/                  # Lambda function code
-│   ├── index.js             # Simple "Hello, World!" function
-│   ├── package.json
-│── bin/
-│   ├── my-cdk-app.ts        # CDK entry point
-│── lib/
-│   ├── my-cdk-app-stack.ts  # CDK stack defining S3, API Gateway, and Lambda
-│── cdk.json                 # CDK config
-│── package.json             # CDK dependencies
-│── tsconfig.json            # TypeScript config
-│── .gitignore
-│── README.md
-
-```
-
-### **Project Structure Breakdown:**
-
-##### 1. **Frontend (`frontend/`)**
-
-The `frontend/` directory contains the React app that is built and hosted on S3. When you run `npm run build`, it generates a production-ready build inside the `frontend/build/` folder.
-
-- **public/**: Contains static assets that are publicly available, such as HTML files, images, and fonts. The `index.html` file serves as the entry point for your app.
-- **src/**: The source code for your React app, including components, utilities, styles, and other JavaScript files.
-- **package.json**: Manages dependencies, scripts, and configurations for your React app.
-- **.gitignore**: Lists files and directories that should be ignored by Git (e.g., `node_modules/`).
-- **README.md**: Contains documentation specific to your React frontend, describing setup, usage, and other relevant details.
-- **build/**: The output folder where your production build is stored. These static files are later uploaded to an S3 bucket for hosting.
-
-##### 2. **Lambda Functions (`lambda/`)**
-
-The `lambda/` directory contains the Lambda function code, which is part of your backend. In your case, the `index.js` file contains a simple "Hello, World!" function, but this will likely be expanded to serve as the backend for your React app.
-
-- **index.js**: This is where your Lambda function is defined. It currently includes a simple "Hello, World!" function that can be extended to perform more complex tasks like interacting with a database or handling API requests.
-- **package.json**: Manages any Node.js dependencies specific to your Lambda functions.
-
-##### 3. **CDK Infrastructure (`bin/` and `lib/`)**
-
-The `bin/` and `lib/` directories are where your AWS Cloud Development Kit (CDK) application lives.
-
-- **bin/**: The entry point for your CDK app, typically a file like `my-cdk-app.ts`. This file defines which stack/s are to be deployed.
-- **lib/**: Contains the CDK stacks, where you define the resources (S3, API Gateway, Lambda) that will be deployed to AWS. In your case, `my-cdk-app-stack.ts` is where the CDK resources such as the S3 bucket, API Gateway, and Lambda function are defined.
-
-##### 4. **CDK Configuration (`cdk.json`, `package.json`, `tsconfig.json`)**
-
-These files handle the configuration and dependencies for your CDK setup.
-
-- **cdk.json**: Contains the configuration for your CDK app, including the environment settings and which file to run as the entry point for the app.
-- **package.json**: Defines the dependencies for the CDK project itself, including AWS SDK and other libraries.
-- **tsconfig.json**: TypeScript configuration file for the CDK project, allowing you to use TypeScript for defining your AWS resources.
+See the READMEs inside each directory for more detail.
 
 ## Prerequisites 
 
@@ -68,67 +35,101 @@ Before getting started, ensure you have the following installed:
 
 AWS CLI: Follow the installation guide here: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html 
 
-
-
 ## 🚀 Getting Started
-
 Follow these steps to set up and deploy the project:
 
 #### 📥 Clone the Repository
-
 Clone this repository into your local environment. 
 
+#### 📄 Read the docs overview
+Start with:
+- `docs/README.md` – how the documentation is organised.
+- `docs/Sprints/Sprint 0/README.md` – challenge context and framing.
+- `docs/Sprints/Sprint 1/README.md` – current sprint goals and key documents.
+
+#### 🗝️ Set up your AWS CLI (SSO, temporary credentials only)
+
+We only use AWS SSO (IAM Identity Center) with short-lived, temporary credentials. Follow the SSO link you received by email to log in to the AWS access portal.
+
+1. In your terminal, run:
+
+```bash
+aws configure sso
+```
+2. Use the Start URL and SSO region provided for the challenge.
+3. Log in via browser when prompted.
+4. Choose your student account and role, then give your profile a name, e.g. uob-student.
+Later, to refresh credentials:
+
+```bash
+aws sso login --profile uob-student
+aws sts get-caller-identity --profile uob-student
+```
+> Do not create or store long-term aws_access_key_id / aws_secret_access_key values for this project. SSO-based profiles only.
+
+More detailed instructions are in the Workshop notes under `docs/Sprints/Sprint 1`.
+
+#### ✨ Find your Sprint 1 tasks
+1. Go to docs/Sprints/Sprint 1/Issue Assignments.md to see your primary Week 1 issue(s).
+2. Open your team’s GitHub Project board (Team A or Team B) and locate your assigned issues.
+3. Move your issue to “In Progress” when you start working on it.
+
+## ✒️ Contributing
+See `CONTRIBUTING.md` for:
+
+- Branch naming conventions,
+- How to write issues and acceptance criteria,
+- How to link your work to user stories and sprints.
+
+## 📈 Status
+- Sprint 0: Completed – framing, challenge definitions, initial architecture.
+- Sprint 1: In progress – design and scaffolding (charter, tools, RAG design, UX slice, repo/CI).
 
 #### 📌 Install AWS CDK globally
-
-```
+```bash
 npm install -g aws-cdk
 ```
 
 #### 📌 Install AWS CDK library
-
-```
+```bash
 npm install aws-cdk-lib
 ```
 
 #### 🛠 Fix any security vulnerabilities
-
-```
+```bash
 npm audit fix
 ```
 
 #### 📂 Navigate to the frontend directory
-
-```
+```bash
 cd frontend
 ```
 
 #### 📌 Install frontend dependencies
-```
+```bash
 npm install
 ```
-```
+```bash
 npm install web-vitals
 ```
-```
+```bash
 npm audit fix --force
 ```
-```
+```bash
 npm install react-scripts --save-dev
 ```
-```
+```bash
 npm run build
 ```
 
-#### 🔙 Return to the root directory
+#### 🔙 Navigate to the infrastructure directory
 
-```
-cd ..
+```bash
+cd ../infrastrucutre
 ```
 
 #### 🚀 Deploy the CDK application
-
-```
+```bash
 cdk deploy --all
 ```
 
