@@ -1,4 +1,4 @@
-# CIC Innovation Center - TestingChallenge PoC
+# CIC Innovation Center - EDU-AGENT – Agentic AI PoC
 
 # EDU-AGENT – Agentic AI for Programme Analysis & Campaigns
 
