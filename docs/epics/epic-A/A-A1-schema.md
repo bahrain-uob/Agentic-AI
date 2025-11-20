@@ -29,7 +29,7 @@ This schema defines the storage structure for the Core Program Performance Metri
 ### Partition Column
 | Column | Type | Description                                                                 |
 |--------|------|-----------------------------------------------------------------------------|
-| dt     | date | Snapshot date. Named `dt` instead of `date` because `date` is a SQL reserved keyword. |
+| dt     |string| Snapshot date. Named `dt` instead of `date` because `date` is a SQL reserved keyword. |
 
 ## Athena DDL
 
