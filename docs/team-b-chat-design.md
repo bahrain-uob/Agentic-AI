@@ -84,9 +84,9 @@ Citations appear directly under the chatbot’s answer bubble.
 A simple filter row can be added above the chat, similar to common app filter bars. 
 
 Might include:
-	-	Programme level (Undergraduate / Master)
-	-	Language (Arabic / English)
-	-	Category (Admissions / Fees / Programme Info)
+  -	Programme level (Undergraduate / Master)
+  -	Language (Arabic / English)
+  -	Category (Admissions / Fees / Programme Info)
 
 ### **Feedback**
 After each answer, two reaction icons appear:
