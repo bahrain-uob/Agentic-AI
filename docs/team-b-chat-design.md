@@ -93,5 +93,5 @@ After each answer, two reaction icons appear:
 👍🏻  
 👎🏻  
 
-Students can click (optional and does not interrupt the converstion) on these to indicate whether the response was helpful.
-
+Students can click on these to indicate whether the response was helpful.
+This is optional and does not interrupt the converstion.
