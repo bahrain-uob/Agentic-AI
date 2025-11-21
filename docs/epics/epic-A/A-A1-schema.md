@@ -47,7 +47,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS team_a_program_daily_metrics (
   student_satisfaction_score  double
 )
 PARTITIONED BY (
-  dt date
+  dt string
 )
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
 WITH SERDEPROPERTIES (
