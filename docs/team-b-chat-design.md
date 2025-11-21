@@ -1,18 +1,26 @@
 # Student Q&A Experience – Journey & UI Sketch
 
-## 1. Persona
+## 1. Persona:
 
+### **Persona 1:**
 - **Name:** Sara, prospective CS student
 - **Goal:** understand options for Cloud track
 - **Context:** Uses a phone, Arabic language, came from an Instagram ad
 
-## 2. Persona
+### **Persona 2:**
 
 - **Name:** Ali, working professional
 - **Goal:** Understand master's program duration, scheduling, and fees
 - **Context:** Uses a laptop, English language, visiting the university website after searching online
 
-## 2. Journey Map (Happy Path)
+## 2. Main Questions Categories:
+
+- **Admissions & application** (requirements, deadlines, how to apply)
+- **Programme information** (tracks, duration, curriculum)
+- **Fees & scholarships** (tuition, payment options, financial support)
+- **Support contacts** (who to contact for help, offices, support channels)
+
+## 3. Journey Map (Happy Path)
 
 Describe the main path in ~5–10 steps:
 
@@ -37,7 +45,7 @@ A simple table:
 | 7    |  Asks follow-up                |  System maintains context               |                                           |
 
 
-## 3. Edge Cases / Error States
+## 4. Edge Cases / Error States
 
 ### No documents found:
 - **Message:** "Sorry, I couldn't find any matching documents for your request."
@@ -62,7 +70,7 @@ A simple table:
   - Contact support
 
 
-## 4. Low-Fidelity UI Sketch (Text Description)
+## 5. Low-Fidelity UI Sketch (Text Description)
 
 ### **Layout:**
 The chat opens in a clean, minimal interface. 
