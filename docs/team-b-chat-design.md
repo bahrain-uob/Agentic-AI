@@ -13,7 +13,7 @@
 - **Goal:** Understand master's program duration, scheduling, and fees
 - **Context:** Uses a laptop, English language, visiting the university website after searching online
 
-## 2. Main Questions Categories:
+## 2. Main Question Categories:
 
 - **Admissions & application** (requirements, deadlines, how to apply)
 - **Programme information** (tracks, duration, curriculum)
