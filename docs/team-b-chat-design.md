@@ -87,7 +87,7 @@ These links open the official university pages in a new tab.
 Citations appear directly under the chatbot’s answer bubble.
 
 ### **Filters (Optional, Future addition):**
-A simple filter row can be added above the chat, similar to common app filter bars. 
+A simple filter row can be added above the chat.
 
 Might include:
   -	Programme level (Undergraduate / Master)
