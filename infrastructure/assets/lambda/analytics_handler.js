@@ -7,33 +7,24 @@ const {
 
 const client = new AthenaClient({ region: "us-east-1" });
 
-const METRICS_DB = process.env.METRICS_DB || "default";
-const METRICS_TABLE = process.env.METRICS_TABLE || "team_a_program_daily_metrics";
-const OUTPUT_LOCATION = process.env.ATHENA_OUTPUT;
-const WORKGROUP = process.env.ATHENA_WORKGROUP || "primary";
+const METRICS_DB = "default";
+const METRICS_TABLE = "team_a_program_daily_metrics";
+const OUTPUT_LOCATION = "s3://team-a-athena-output/program_daily_metrics/";
+const WORKGROUP = "primary";
 
 exports.handler = async (event) => {
   const body = JSON.parse(event.body || "{}");
   const period = body.period;
 
-  if (!period) {
-    return { statusCode: 400, body: JSON.stringify({ error: "Missing required field: period" }) };
-  }
+  if (!period) return { statusCode: 400, body: JSON.stringify({ error: "Missing required field: period" }) };
 
   let periodFilter;
   switch (period) {
     case "current_semester":
-      periodFilter = `
-        try(date_parse(dt, '%Y-%m-%d')) IS NOT NULL
-        AND date_parse(dt, '%Y-%m-%d')
-          BETWEEN date '2025-09-01' AND date '2025-12-31'
-      `;
+      periodFilter = "try(date_parse(dt, '%Y-%m-%d')) IS NOT NULL AND date_parse(dt, '%Y-%m-%d') BETWEEN date '2025-09-01' AND date '2025-12-31'";
       break;
     case "last_year":
-      periodFilter = `
-        try(date_parse(dt, '%Y-%m-%d')) IS NOT NULL
-        AND year(date_parse(dt, '%Y-%m-%d')) = year(current_date) - 1
-      `;
+      periodFilter = "try(date_parse(dt, '%Y-%m-%d')) IS NOT NULL AND year(date_parse(dt, '%Y-%m-%d')) = year(current_date) - 1";
       break;
     default:
       return { statusCode: 400, body: JSON.stringify({ error: `Invalid period: ${period}` }) };
@@ -65,16 +56,16 @@ exports.handler = async (event) => {
       await new Promise(r => setTimeout(r, 2000));
       const statusResp = await client.send(new GetQueryExecutionCommand({ QueryExecutionId: queryExecutionId }));
       state = statusResp.QueryExecution.Status.State;
-      if (state === "FAILED" || state === "CANCELLED") {
-        throw new Error("Athena query failed: " + JSON.stringify(statusResp));
-      }
+      if (state === "FAILED" || state === "CANCELLED") throw new Error("Athena query failed: " + JSON.stringify(statusResp));
     }
 
     const results = await client.send(new GetQueryResultsCommand({ QueryExecutionId: queryExecutionId }));
     const headers = results.ResultSet.Rows[0].Data.map(col => col.VarCharValue || null);
+    const numericFields = ["total_enrollments","new_enrollments","completions","dropouts","avg_gpa","avg_satisfaction"];
     const dataRows = results.ResultSet.Rows.slice(1).map(row =>
       row.Data.reduce((obj, col, i) => {
-        obj[headers[i]] = col.VarCharValue || null;
+        const val = col.VarCharValue || "0";
+        obj[headers[i]] = numericFields.includes(headers[i]) ? parseFloat(val) : val;
         return obj;
       }, {})
     );

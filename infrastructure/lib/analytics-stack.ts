@@ -2,10 +2,17 @@ import * as cdk from "aws-cdk-lib";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import * as iam from "aws-cdk-lib/aws-iam";
+import * as s3 from "aws-cdk-lib/aws-s3";
 
 export class AnalyticsStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+
+    const outputBucket = new s3.Bucket(this, "AthenaOutputBucket", {
+      bucketName: "team-a-athena-output",
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    });
 
     const analyticsHandler = new lambda.Function(this, "AnalyticsHandlerLambda", {
       runtime: lambda.Runtime.NODEJS_18_X,
@@ -15,7 +22,7 @@ export class AnalyticsStack extends cdk.Stack {
       environment: {
         METRICS_DB: "default",
         METRICS_TABLE: "team_a_program_daily_metrics",
-        ATHENA_OUTPUT: "s3://team-a-athena-output/program_daily_metrics/",
+        ATHENA_OUTPUT: `s3://${outputBucket.bucketName}/program_daily_metrics/`,
         ATHENA_WORKGROUP: "primary",
       },
     });
@@ -31,12 +38,12 @@ export class AnalyticsStack extends cdk.Stack {
 
     analyticsHandler.addToRolePolicy(new iam.PolicyStatement({
       actions: ["s3:ListBucket"],
-      resources: ["arn:aws:s3:::team-a-athena-output"],
+      resources: [`arn:aws:s3:::${outputBucket.bucketName}`],
     }));
 
     analyticsHandler.addToRolePolicy(new iam.PolicyStatement({
       actions: ["s3:GetObject", "s3:PutObject"],
-      resources: ["arn:aws:s3:::team-a-athena-output/*"],
+      resources: [`arn:aws:s3:::${outputBucket.bucketName}/*`],
     }));
 
     const api = new apigateway.RestApi(this, "AnalyticsApi", {
