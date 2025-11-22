@@ -1,6 +1,7 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
 import './ProgramAnalytics.css';
+import ExecutiveOverview from './ExecutiveOverview';
 //import { LineChart, BarChart } from 'pychart_service';
 
 // ProgramAnalytics Component - Displays program performance charts and AI analysis
@@ -10,6 +11,9 @@ function ProgramAnalytics() {
   const [analyticsData, setAnalyticsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // Tracks which tab is currently active: 'admin' or 'executive'
+  const [activeTab, setActiveTab] = useState('admin');
+
 
   // Fetch analytics data from backend API
   useEffect(() => {
@@ -20,7 +24,7 @@ function ProgramAnalytics() {
 
       // TODO: Remove this temporary fix when backend is ready
       // Temporary: Simulate successful empty data
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate delay
       setAnalyticsData({
         metrics: [],
         narrative: "AI analysis will appear here when backend is connected"
@@ -83,47 +87,64 @@ function ProgramAnalytics() {
 
     // Success state - display charts and AI narrative
   return (
-    <div className="program-analytics">
+  <div className="program-analytics">
+    <p className="back-link">
+      <a href="../">← Back to Home</a>
+    </p>
 
-      {/* BACK TO HOME LINK - Allows users to return to the main dashboard */}
-      <p className="back-link">
-        <a href="../">← Back to Home</a>
-      </p>
+    <h1>Analytics Dashboard - Team A</h1>
+    
+    {/* Tab Navigation - Switch between Admin and Executive views */}
+    <div className="analytics-tabs">
+      <button 
+        className={activeTab === 'admin' ? 'tab-active' : ''}
+        onClick={() => setActiveTab('admin')}
+      >
+        Admin View
+      </button>
+      <button 
+        className={activeTab === 'executive' ? 'tab-active' : ''}
+        onClick={() => setActiveTab('executive')}
+      >
+        Executive Overview
+      </button>
+    </div>
 
-      {/* MAIN CONTENT HEADER */}
-      <h1>Program Analytics - Team A</h1>
-      <p>This page will display program performance charts and AI analysis.</p>
-      {/* Charts Section - TODO: Integrate pychart_service components */}
+{/* Admin View - Detailed analytics with real data */}
+{activeTab === 'admin' && (
+  <div className="tab-content">
+    <h1>Admin View</h1>
+    <p>Detailed program performance charts and analysis.</p>
+    <div className="content-grid">
       <div className="charts-section">
         <h2>Program Performance Metrics</h2>
         <div className="chart-container">
+          {/* TODO: Use real charts with analyticsData */}
           <p className="chart-placeholder">
-            📊 Charts will be integrated with pychart_service
+            📊 Charts will show real data from: {analyticsData ? 'Data loaded' : 'Loading...'}
           </p>
-          {/* 
-            TODO: Replace with actual chart components:
-            <LineChart data={analyticsData.metrics} />
-            <BarChart data={analyticsData.comparisons} />
-          */}
         </div>
       </div>
 
-    {/* AI Narrative Section - TODO: Display Bedrock-generated text */}
       <div className="narrative-section">
         <h2>AI Analysis</h2>
         <div className="narrative-content">
-          <p className="narrative-placeholder">
-            🤖 Bedrock-generated narrative will appear here
-          </p>
-          {/* 
-            TODO: Display actual AI narrative:
-            <p>{analyticsData.narrative}</p>
-          */}
+          {/* TODO: Use real AI narrative */}
+          <p>{analyticsData?.narrative || 'AI analysis will appear here'}</p>
         </div>
       </div>
-
     </div>
-  );
+  </div>
+)}
+
+{/* Executive Overview - Strategic view with same real data */}
+{activeTab === 'executive' && (
+  <div className="tab-content">
+    <ExecutiveOverview analyticsData={analyticsData} />
+  </div>
+)}
+  </div>
+);
 }
 
 export default ProgramAnalytics;
