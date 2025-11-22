@@ -18,7 +18,7 @@ export class MyCdkStack extends cdk.Stack {
 
     // Deploy React App to S3
     new s3deploy.BucketDeployment(this, "DeployWebsite", {
-      sources: [s3deploy.Source.asset("./frontend/build")],
+      sources: [s3deploy.Source.asset("../frontend/build")],
       destinationBucket: websiteBucket,
     });
 
