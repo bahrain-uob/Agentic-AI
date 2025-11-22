@@ -22,8 +22,6 @@
 
 ## 3. Journey Map (Happy Path)
 
-Describe the main path in ~5–10 steps:
-
 1. Student lands on the EDU-AGENT portal.
 2. Logs in (or continues as guest). 
 3. Enters a question in the Q&A box.
@@ -41,8 +39,8 @@ A simple table:
 | 3    |  Types a question              |  Starts classification                  |  Quick-action buttons (Smart suggestions) |
 | 4    |  Waits                         |  Shows loading state                    |                                           |
 | 5    |  Reads answer                  |  Shows an answer                        |  Key bullet points                        |
-| 6    |  Check sources                 |  Shows links to official UOB pages     |  View the catalogue section               |
-| 7    |  Asks follow-up                |  System maintains context               |                                           |
+| 6    |  Check sources                 |  Shows links to official UOB pages      |  View the catalogue section               |
+| 7    |  Asks follow-up                |  System maintains context               |  User Feedback                                         |
 
 
 ## 4. Edge Cases / Error States
@@ -80,7 +78,7 @@ Messages appear in vertical bubbles.
 
 ### **Quick-Action buttons (Suggested questions):**
 Below the welcome message, the chatbot shows rounded quick-action buttons with common questions
-(e.g., “Admission requirements”, “Master’s fees”, “Programme details”).
+(e.g., “Admission requirements”, “Master’s fees”, “Program details”).
 These help the student start quickly without typing.
 
 ### **Citations / Related Links:**
