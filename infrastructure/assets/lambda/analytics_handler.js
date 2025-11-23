@@ -1,3 +1,9 @@
+/**
+ Analytics Lambda Handler is a Lambda functions that executes Athena queries over Team A metrics tables
+ and returns aggregated enrollment and completion metrics.
+ the function is Linked to Analytics UI and relevant user stories: US-01, US-03, US-06, US-09
+ */
+
 const {
   AthenaClient,
   StartQueryExecutionCommand,
