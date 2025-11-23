@@ -1,60 +1,66 @@
 import * as cdk from "aws-cdk-lib";
+import { Construct } from "constructs";
 import * as lambda from "aws-cdk-lib/aws-lambda";
-import * as apigateway from "aws-cdk-lib/aws-apigateway";
-import * as iam from "aws-cdk-lib/aws-iam";
 import * as s3 from "aws-cdk-lib/aws-s3";
+import * as iam from "aws-cdk-lib/aws-iam";
 
 export class AnalyticsStack extends cdk.Stack {
-  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const outputBucket = new s3.Bucket(this, "AthenaOutputBucket", {
-      bucketName: "team-a-athena-output",
+    const outputBucket = new s3.Bucket(this, "AnalyticsOutputBucket", {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
+      autoDeleteObjects: true
     });
 
-    const analyticsHandler = new lambda.Function(this, "AnalyticsHandlerLambda", {
+    const analyticsLambda = new lambda.Function(this, "AnalyticsHandler", {
       runtime: lambda.Runtime.NODEJS_18_X,
-      handler: "analytics_handler.handler",
+      handler: "analytics_handler.analytics_handler",
       code: lambda.Code.fromAsset("assets/lambda"),
       timeout: cdk.Duration.seconds(60),
+      memorySize: 256,
       environment: {
         METRICS_DB: "default",
         METRICS_TABLE: "team_a_program_daily_metrics",
-        ATHENA_OUTPUT: `s3://${outputBucket.bucketName}/program_daily_metrics/`,
-        ATHENA_WORKGROUP: "primary",
-      },
+        OUTPUT_BUCKET: outputBucket.bucketName
+      }
     });
 
-    analyticsHandler.addToRolePolicy(new iam.PolicyStatement({
+    outputBucket.grantReadWrite(analyticsLambda);
+
+    analyticsLambda.addToRolePolicy(new iam.PolicyStatement({
       actions: [
         "athena:StartQueryExecution",
         "athena:GetQueryExecution",
         "athena:GetQueryResults"
       ],
-      resources: ["*"],
+      resources: ["*"]
     }));
 
-    analyticsHandler.addToRolePolicy(new iam.PolicyStatement({
-      actions: ["s3:ListBucket"],
-      resources: [`arn:aws:s3:::${outputBucket.bucketName}`],
+    analyticsLambda.addToRolePolicy(new iam.PolicyStatement({
+      actions: [
+        "s3:GetObject",
+        "s3:ListBucket"
+      ],
+      resources: [
+        "arn:aws:s3:::uob-team-a-analytics",
+        "arn:aws:s3:::uob-team-a-analytics/*"
+      ]
     }));
 
-    analyticsHandler.addToRolePolicy(new iam.PolicyStatement({
-      actions: ["s3:GetObject", "s3:PutObject"],
-      resources: [`arn:aws:s3:::${outputBucket.bucketName}/*`],
+    analyticsLambda.addToRolePolicy(new iam.PolicyStatement({
+      actions: [
+        "glue:GetDatabase",
+        "glue:GetDatabases",
+        "glue:GetTable",
+        "glue:GetTables",
+        "glue:GetPartition",
+        "glue:GetPartitions"
+      ],
+      resources: ["*"]
     }));
 
-    const api = new apigateway.RestApi(this, "AnalyticsApi", {
-      restApiName: "Team A Analytics Service",
-    });
-
-    const analytics = api.root.addResource("analytics");
-    analytics.addMethod("POST", new apigateway.LambdaIntegration(analyticsHandler));
-
-    new cdk.CfnOutput(this, "AnalyticsApiEndpoint", {
-      value: api.url,
-    });
+    new cdk.CfnOutput(this, "AnalyticsLambdaArn", { value: analyticsLambda.functionArn });
+    new cdk.CfnOutput(this, "AnalyticsOutputBucketName", { value: outputBucket.bucketName });
   }
 }

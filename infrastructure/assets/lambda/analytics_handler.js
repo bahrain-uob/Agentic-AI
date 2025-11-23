@@ -5,72 +5,67 @@ const {
   GetQueryResultsCommand
 } = require("@aws-sdk/client-athena");
 
-const client = new AthenaClient({ region: "us-east-1" });
+const client = new AthenaClient({ region: process.env.AWS_REGION });
 
-const METRICS_DB = "default";
-const METRICS_TABLE = "team_a_program_daily_metrics";
-const OUTPUT_LOCATION = "s3://team-a-athena-output/program_daily_metrics/";
-const WORKGROUP = "primary";
+exports.analytics_handler = async (event) => {
+  const period = event.period || "current_semester";
+  const db = process.env.METRICS_DB;
+  const table = process.env.METRICS_TABLE;
+  const outputBucket = process.env.OUTPUT_BUCKET;
 
-exports.handler = async (event) => {
-  const body = JSON.parse(event.body || "{}");
-  const period = body.period;
+  const periodMap = {
+    current_semester: "2025-10-01,2025-10-31",
+    last_semester: "2025-05-01,2025-09-30"
+  };
 
-  if (!period) return { statusCode: 400, body: JSON.stringify({ error: "Missing required field: period" }) };
-
-  let periodFilter;
-  switch (period) {
-    case "current_semester":
-      periodFilter = "try(date_parse(dt, '%Y-%m-%d')) IS NOT NULL AND date_parse(dt, '%Y-%m-%d') BETWEEN date '2025-09-01' AND date '2025-12-31'";
-      break;
-    case "last_year":
-      periodFilter = "try(date_parse(dt, '%Y-%m-%d')) IS NOT NULL AND year(date_parse(dt, '%Y-%m-%d')) = year(current_date) - 1";
-      break;
-    default:
-      return { statusCode: 400, body: JSON.stringify({ error: `Invalid period: ${period}` }) };
+  if (!periodMap[period]) {
+    return { statusCode: 400, body: JSON.stringify({ status: "error", details: "Invalid period" }) };
   }
 
+  const [startDate, endDate] = periodMap[period].split(",");
+
   const query = `
-    SELECT
+    SELECT 
       SUM(enrollment_count) AS total_enrollments,
-      SUM(new_enrollments) AS new_enrollments,
-      SUM(completions_count) AS completions,
-      SUM(dropouts_count) AS dropouts,
-      AVG(avg_gpa) AS avg_gpa,
-      AVG(student_satisfaction_score) AS avg_satisfaction
-    FROM ${METRICS_DB}.${METRICS_TABLE}
-    WHERE ${periodFilter};
+      SUM(completions_count) AS total_completions
+    FROM ${db}.${table}
+    WHERE date_parse(dt, '%Y-%m-%d') BETWEEN DATE '${startDate}' AND DATE '${endDate}'
   `;
 
   try {
-    const startResp = await client.send(new StartQueryExecutionCommand({
+    const startCommand = new StartQueryExecutionCommand({
       QueryString: query,
-      QueryExecutionContext: { Database: METRICS_DB },
-      ResultConfiguration: { OutputLocation: OUTPUT_LOCATION },
-      WorkGroup: WORKGROUP,
-    }));
+      ResultConfiguration: { OutputLocation: `s3://${outputBucket}/` }
+    });
 
-    const queryExecutionId = startResp.QueryExecutionId;
-    let state = "RUNNING";
-    while (state === "RUNNING" || state === "QUEUED") {
-      await new Promise(r => setTimeout(r, 2000));
-      const statusResp = await client.send(new GetQueryExecutionCommand({ QueryExecutionId: queryExecutionId }));
-      state = statusResp.QueryExecution.Status.State;
-      if (state === "FAILED" || state === "CANCELLED") throw new Error("Athena query failed: " + JSON.stringify(statusResp));
+    const startResult = await client.send(startCommand);
+    const queryExecutionId = startResult.QueryExecutionId;
+
+    let status = "RUNNING";
+    while (status === "RUNNING" || status === "QUEUED") {
+      const getStatus = await client.send(new GetQueryExecutionCommand({ QueryExecutionId: queryExecutionId }));
+      status = getStatus.QueryExecution.Status.State;
+
+      if (status === "FAILED" || status === "CANCELLED") {
+        return { statusCode: 500, body: JSON.stringify({ status: "error", details: "Athena query failed" }) };
+      }
+
+      if (status === "SUCCEEDED") break;
+      await new Promise(r => setTimeout(r, 1000));
     }
 
-    const results = await client.send(new GetQueryResultsCommand({ QueryExecutionId: queryExecutionId }));
-    const headers = results.ResultSet.Rows[0].Data.map(col => col.VarCharValue || null);
-    const numericFields = ["total_enrollments","new_enrollments","completions","dropouts","avg_gpa","avg_satisfaction"];
-    const dataRows = results.ResultSet.Rows.slice(1).map(row =>
-      row.Data.reduce((obj, col, i) => {
-        const val = col.VarCharValue || "0";
-        obj[headers[i]] = numericFields.includes(headers[i]) ? parseFloat(val) : val;
-        return obj;
-      }, {})
-    );
+    const resultsCommand = new GetQueryResultsCommand({ QueryExecutionId: queryExecutionId });
+    const results = await client.send(resultsCommand);
 
-    return { statusCode: 200, body: JSON.stringify({ status: "success", period, results: dataRows }) };
+    if (!results.ResultSet.Rows[1]) {
+      return { statusCode: 200, body: JSON.stringify({ status: "success", data: { total_enrollments: 0, total_completions: 0, period } }) };
+    }
+
+    const row = results.ResultSet.Rows[1];
+    const [total_enrollments, total_completions] = row.Data.map(d => Number(d.VarCharValue));
+
+    return { statusCode: 200, body: JSON.stringify({ status: "success", data: { total_enrollments, total_completions, period } }) };
+
   } catch (err) {
     return { statusCode: 500, body: JSON.stringify({ status: "error", details: err.message }) };
   }
