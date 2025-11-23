@@ -47,8 +47,6 @@ As the Sprints proceed, these folders will gradually be populated with implement
 ## Development Notes
 - Keep modules small and focused; prefer clear separation between:
 
-    - “Domain logic” (e.g. programme comparison, scoring),
-    - “Infrastructure glue” (e.g. AWS SDK calls).
 
 Wire up services to infrastructure stacks defined in ../infrastructure/ as the project evolves.
 
